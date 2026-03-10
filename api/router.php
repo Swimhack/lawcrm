@@ -13,6 +13,12 @@ if ($route === 'auth/login' || $route === 'auth/logout') {
     exit;
 }
 
+// Public intake endpoint — no auth required
+if ($route === 'intake') {
+    require_once __DIR__ . '/intake.php';
+    exit;
+}
+
 // Everything else requires auth
 if (empty($_SESSION['user_id'])) {
     jsonError('Unauthorized', 401);

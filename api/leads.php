@@ -13,12 +13,15 @@ switch ($method) {
         $search = trim($_GET['search'] ?? '');
         $statusFilter = trim($_GET['status'] ?? '');
         $areaFilter = trim($_GET['practice_area'] ?? '');
+        $sourceFilter = trim($_GET['source'] ?? '');
+        $stateFilter = trim($_GET['state'] ?? '');
 
         $where = [];
         $params = [];
 
         if ($search !== '') {
-            $where[] = '(name LIKE ? OR email LIKE ? OR phone LIKE ?)';
+            $where[] = '(name LIKE ? OR email LIKE ? OR phone LIKE ? OR city LIKE ?)';
+            $params[] = "%$search%";
             $params[] = "%$search%";
             $params[] = "%$search%";
             $params[] = "%$search%";
@@ -30,6 +33,14 @@ switch ($method) {
         if ($areaFilter !== '') {
             $where[] = 'practice_area = ?';
             $params[] = $areaFilter;
+        }
+        if ($sourceFilter !== '') {
+            $where[] = 'source = ?';
+            $params[] = $sourceFilter;
+        }
+        if ($stateFilter !== '') {
+            $where[] = 'state = ?';
+            $params[] = $stateFilter;
         }
 
         $whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
@@ -66,7 +77,7 @@ switch ($method) {
         $errors = validateLead($data);
         if ($errors) jsonError(implode(', ', $errors));
 
-        $sql = 'INSERT INTO leads (name, email, phone, practice_area, status, score) VALUES (?, ?, ?, ?, ?, ?)';
+        $sql = 'INSERT INTO leads (name, email, phone, practice_area, status, score, source, city, state, notes, utm_source, utm_medium, utm_campaign) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             sanitize($data['name']),
@@ -75,6 +86,13 @@ switch ($method) {
             $data['practice_area'],
             $data['status'],
             intval($data['score']),
+            sanitize($data['source'] ?? 'direct'),
+            sanitize($data['city'] ?? ''),
+            strtoupper(sanitize($data['state'] ?? '')),
+            sanitize($data['notes'] ?? ''),
+            sanitize($data['utm_source'] ?? ''),
+            sanitize($data['utm_medium'] ?? ''),
+            sanitize($data['utm_campaign'] ?? ''),
         ]);
 
         $id = $pdo->lastInsertId();
@@ -93,7 +111,7 @@ switch ($method) {
         $errors = validateLead($data);
         if ($errors) jsonError(implode(', ', $errors));
 
-        $sql = 'UPDATE leads SET name = ?, email = ?, phone = ?, practice_area = ?, status = ?, score = ? WHERE id = ?';
+        $sql = 'UPDATE leads SET name = ?, email = ?, phone = ?, practice_area = ?, status = ?, score = ?, source = ?, city = ?, state = ?, notes = ?, utm_source = ?, utm_medium = ?, utm_campaign = ? WHERE id = ?';
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             sanitize($data['name']),
@@ -102,6 +120,13 @@ switch ($method) {
             $data['practice_area'],
             $data['status'],
             intval($data['score']),
+            sanitize($data['source'] ?? 'direct'),
+            sanitize($data['city'] ?? ''),
+            strtoupper(sanitize($data['state'] ?? '')),
+            sanitize($data['notes'] ?? ''),
+            sanitize($data['utm_source'] ?? ''),
+            sanitize($data['utm_medium'] ?? ''),
+            sanitize($data['utm_campaign'] ?? ''),
             intval($data['id']),
         ]);
 

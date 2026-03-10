@@ -3,14 +3,20 @@ function crmApp() {
         leads: [],
         meta: { total: 0, page: 1, pages: 1, limit: 50 },
         showModal: false,
+        showDetailPanel: false,
         formError: '',
-        currentLead: { id: null, name: '', email: '', phone: '', practice_area: '', status: 'New', score: 0 },
-        filters: { search: '', status: '', practice_area: '' },
+        detailLead: {},
+        currentLead: { id: null, name: '', email: '', phone: '', practice_area: '', status: 'New', score: 0, source: '', city: '', state: '', notes: '' },
+        filters: { search: '', status: '', practice_area: '', source: '', state: '' },
 
         get avgScore() {
             if (this.leads.length === 0) return 0;
             const total = this.leads.reduce((sum, l) => sum + parseInt(l.score || 0), 0);
             return Math.round(total / this.leads.length);
+        },
+
+        get uniqueSources() {
+            return new Set(this.leads.map(l => l.source || 'direct')).size;
         },
 
         getCsrf() {
@@ -25,6 +31,8 @@ function crmApp() {
             if (this.filters.search) params.set('search', this.filters.search);
             if (this.filters.status) params.set('status', this.filters.status);
             if (this.filters.practice_area) params.set('practice_area', this.filters.practice_area);
+            if (this.filters.source) params.set('source', this.filters.source);
+            if (this.filters.state) params.set('state', this.filters.state);
 
             try {
                 const res = await fetch('/api/leads?' + params, {
@@ -43,7 +51,7 @@ function crmApp() {
         },
 
         addLead() {
-            this.currentLead = { id: null, name: '', email: '', phone: '', practice_area: '', status: 'New', score: 0 };
+            this.currentLead = { id: null, name: '', email: '', phone: '', practice_area: '', status: 'New', score: 0, source: '', city: '', state: '', notes: '' };
             this.formError = '';
             this.showModal = true;
         },
@@ -52,6 +60,11 @@ function crmApp() {
             this.currentLead = { ...lead };
             this.formError = '';
             this.showModal = true;
+        },
+
+        showDetail(lead) {
+            this.detailLead = { ...lead };
+            this.showDetailPanel = true;
         },
 
         async saveLead() {
