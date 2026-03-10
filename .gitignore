@@ -1,0 +1,8 @@
+.env
+_notes/
+test.php
+dbconnect.php
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
